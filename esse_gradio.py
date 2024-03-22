@@ -15,6 +15,14 @@ def auth_func(username, password):
     success = database.auth(username, password)
     return success
 
+def load_user(request : gr.Request):
+    database = DataBase()
+    return request.username, database.get_user_tokens(request.username), gr.update(choices=database.get_user_esses_list(request.username))
+
+def get_esse(date, request: gr.Request):
+    database = DataBase()
+    return database.get_esse(request.username, date)
+
 database = DataBase()
     
 def check_esse(inp_task, inp_esse, request : gr.Request):
@@ -38,7 +46,7 @@ def check_esse(inp_task, inp_esse, request : gr.Request):
 
 
 with gr.Blocks() as demo:
-    with gr.Tab("Main"):
+    with gr.Tab("Проверить эссе"):
         gr.Markdown("""# Проверка английского эссе.
         
     В первое окно введите задание на эссе.
@@ -51,6 +59,22 @@ with gr.Blocks() as demo:
             with gr.Column(scale=3):
                 out = gr.Markdown("# Результаты проверки\n\nЗдесь вы увидите результаты проверки эссе.")
         btn.click(fn=check_esse, inputs=[inp_task, inp_esse], outputs=out)
+    
+    with gr.Tab("Личный кобинет"):
+        user_login = gr.Textbox(label="Логин", interactive=False)
+        user_tokens = gr.Textbox(label="Количество доступных проверок", interactive=False)
+        
+        gr.Button("Пополнить счет")
+
+        select_esse = gr.Dropdown(label="Выбор Эссе", interactive=True)
+        esse_task = gr.TextArea(label="Задание")
+        with gr.Row():
+            esse_source = gr.TextArea(label="Эссе (источник)")
+            esse_result = gr.TextArea(label="Эссе (проверка)")
+
+        select_esse.change(fn=get_esse, inputs=[select_esse], outputs=[esse_task, esse_source, esse_result])
+        demo.load(load_user, inputs=None, outputs=[user_login, user_tokens, select_esse])
+
 
 
 demo.launch(server_name='0.0.0.0', server_port=7860, 

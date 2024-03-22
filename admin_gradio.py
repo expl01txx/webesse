@@ -1,5 +1,7 @@
 import gradio as gr
 from db import DataBase
+import random
+import string
 
 def auth_func(username, password):
     database = DataBase()
@@ -38,6 +40,9 @@ def add_user(username, password):
         gr.Info("Ошибка добавления пользователя")
         return "Ошибка добавления пользователя"
 
+def random_password():
+    return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(16))
+
 database = DataBase()
 
 #admin panel
@@ -69,9 +74,13 @@ with gr.Blocks() as admin:
         user_login = gr.Textbox(label="Логин")
         user_pass = gr.Textbox(label="Пароль")
         result = gr.Textbox(label="Результат")
-        btn_add_user = gr.Button("Добавить")
+        with gr.Row():
+            with gr.Column(scale=3):
+                btn_add_user = gr.Button("Добавить")
+            with gr.Column(scale=1):
+                rnd_pass = gr.Button("Сгенерировать случайный пароль")
         btn_add_user.click(fn=add_user, inputs=[user_login, user_pass], outputs=result)
-
+        rnd_pass.click(fn=random_password, outputs=user_pass)
 admin.launch(server_name='127.0.0.1', server_port=7861, 
             show_api=False, 
             auth = auth_func, 
