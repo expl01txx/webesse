@@ -2,7 +2,7 @@ import gradio as gr
 from db import DataBase
 import random
 import string
-
+#test
 def auth_func(username, password):
     database = DataBase()
     success = database.auth(username, password)
