@@ -12,8 +12,7 @@ logging.basicConfig(filename='_webEsse.log',encoding='utf-8',
 def auth_func(username, password):
     database = DataBase()
     logging.log(logging.INFO, str(database.auth(username, password)))
-    success = database.auth(username, password)
-    return success
+    return database.auth(username, password)
 
 def load_user(request : gr.Request):
     database = DataBase()
@@ -34,10 +33,8 @@ def check_esse(inp_task, inp_esse, request : gr.Request):
         return 'Прошу прощения, у вас закончилось количество попыток.'
         
     if inp_esse=='':
-        gr.Warning('Введите текст задания')
         return 'Ошибка, недостает данных'
     if inp_task=='':
-        gr.Warning('Введите текст эссе')
         return 'Ошибка, недостает данных'
     
     database.add_usage(request.username)

@@ -6,9 +6,7 @@ import string
 def auth_func(username, password):
     database = DataBase()
     success = database.auth(username, password)
-    if database.is_admin(username) and success:
-        return True
-    return False
+    return database.is_admin(username) and success
 
 def get_user_info(username):
     database = DataBase()
@@ -34,10 +32,8 @@ def add_user(username, password):
     database = DataBase()
     try:
         database.add_user(username, password)
-        gr.Info("Пользователь успешно добавлен")
         return "Пользователь успешно добавлен"
     except:
-        gr.Info("Ошибка добавления пользователя")
         return "Ошибка добавления пользователя"
 
 def random_password():
@@ -81,7 +77,8 @@ with gr.Blocks() as admin:
                 rnd_pass = gr.Button("Сгенерировать случайный пароль")
         btn_add_user.click(fn=add_user, inputs=[user_login, user_pass], outputs=result)
         rnd_pass.click(fn=random_password, outputs=user_pass)
-admin.launch(server_name='127.0.0.1', server_port=7861, 
+
+admin.launch(server_name='0.0.0.0', server_port=7861, 
             show_api=False, 
             auth = auth_func, 
             auth_message= "Введите пароль или запросите его у владельца TG @aikula", 
