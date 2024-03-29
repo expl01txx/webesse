@@ -4,14 +4,12 @@ class DataBase:
     def __init__(self):
         self.db = sqlite3.connect("db/webesse.db")
     def auth(self, login: str, passwd: str) -> bool:
-        try:
-            result = self.db.execute("SELECT * FROM users WHERE login = ? AND passwd = ?", (login, passwd))
-            if result.fetchone():
-                return True
-            else:
-                return False
-        except:
+        result = self.db.execute("SELECT * FROM users WHERE login = ? AND passwd = ?", (login, passwd))
+        if result.fetchone():
+            return True
+        else:
             return False
+
     
     def add_user(self, login: str, passwd: str):
         self.db.execute("INSERT INTO users (login, passwd, tokens, admin, esse_checks) VALUES (?, ?, ?, ?, ?)", (login, passwd, 10, 0, 0))
@@ -26,16 +24,16 @@ class DataBase:
         self.db.commit()
     
     def can_use(self, login: str):
-        result = self.db.execute("SELECT * FROM users WHERE login = ?", (login,))
+        result = self.db.execute("SELECT tokens FROM users WHERE login = ?", (login,))
         user = result.fetchone()
-        if user[3] > 0:
+        if user[0] > 0:
             return True
         return False
     
     def is_admin(self, login: str):
-        result = self.db.execute("SELECT * FROM users WHERE login = ?", (login,))
+        result = self.db.execute("SELECT admin FROM users WHERE login = ?", (login,))
         user = result.fetchone()
-        if user[4]:
+        if user[0]:
             return True
         else:
             return False
@@ -48,24 +46,32 @@ class DataBase:
             users.append(i[1])
         return users
     
+    def get_user(self, username):
+        response = self.db.execute("SELECT login, tokens, admin, esse_checks from users WHERE login = ?", (username,))
+        result = response.fetchall()
+        if result == []:
+            return None
+        user = {'login': result[0][0], 'tokens': result[0][1], 'admin': result[0][2], 'esse_checks': result[0][3]}
+        return user
+
     def get_user_tokens(self, username):
-        result = self.db.execute("SELECT * FROM users WHERE login = ?", (username,))
+        result = self.db.execute("SELECT tokens FROM users WHERE login = ?", (username,))
         user = result.fetchone()
-        return user[4]
+        return user[0]
     
     def add_user_tokens(self, username, tokens):
         self.db.execute("UPDATE users SET tokens = tokens + ? WHERE login = ?", (tokens, username))
         self.db.commit()
     
     def get_user_checks(self, username):
-        result = self.db.execute("SELECT * FROM users WHERE login = ?", (username,))
+        result = self.db.execute("SELECT esse_checks FROM users WHERE login = ?", (username,))
         user = result.fetchone()
-        return user[6]
+        return user[0]
     
     def get_user_last_activity(self, username):
-        result = self.db.execute("SELECT * FROM users WHERE login = ?", (username,))
+        result = self.db.execute("SELECT last_activity FROM users WHERE login = ?", (username,))
         user = result.fetchone()
-        return user[7]
+        return user[0]
 
     def get_user_info(self, username):
         result = self.db.execute("SELECT * FROM users WHERE login = ?", (username,))
@@ -93,3 +99,7 @@ class DataBase:
         result = self.db.execute("SELECT * FROM logs WHERE login = ? AND date = ?", (username, esse_date))
         esse = result.fetchone()
         return [esse[2], esse[3], esse[4]]
+
+    def add_user(self, username, passwd):
+        self.db.execute("INSERT INTO users (login, passwd, tokens, admin, esse_checks) VALUES (?, ?, ?, ?, ?)", (username, passwd, 10, 0, 0))
+        self.db.commit()

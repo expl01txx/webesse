@@ -395,3 +395,16 @@
 2024-03-22 12:02:46,750-INFO-12528--->True
 2024-03-22 12:03:33,481-INFO-15732--->True
 2024-03-22 12:05:07,988-INFO-18108--->True
+2024-03-29 17:41:53,159-ERROR-9228--->Error on reading from the event loop self pipe
+loop: <ProactorEventLoop running=True closed=False debug=False>
+Traceback (most recent call last):
+  File "C:\Users\sdd\AppData\Local\Programs\Python\Python312\Lib\asyncio\proactor_events.py", line 793, in _loop_self_reading
+    f.result()  # may raise
+    ^^^^^^^^^^
+  File "C:\Users\sdd\AppData\Local\Programs\Python\Python312\Lib\asyncio\windows_events.py", line 798, in _poll
+    value = callback(transferred, key, ov)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sdd\AppData\Local\Programs\Python\Python312\Lib\asyncio\windows_events.py", line 461, in finish_socket_func
+    return ov.getresult()
+           ^^^^^^^^^^^^^^
+OSError: [WinError 121] Превышен таймаут семафора
