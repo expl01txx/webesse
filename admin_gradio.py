@@ -3,29 +3,45 @@ from db import DataBase
 import random
 import string
 
+def is_admin(request : gr.Request, database: DataBase):
+    if ("username" not in request.request.session or database.get_user(request.request.session['username']) == None):
+        return False
+    if not database.is_admin(request.request.session['username']):
+        return False
+    return True
 
-def get_user_info(username):
+def get_user_info(request : gr.Request, username):
     database = DataBase()
+    if not is_admin(request, database):
+        return ['UNAUTHORIZED', 'UNAUTHORIZED', 'UNAUTHORIZED']
     user_info = database.get_user_info(username)
     return user_info
 
-def add_user_tokens(user_tokens, username, value):
+def add_user_tokens(request : gr.Request, username, value):
     database = DataBase()
+    if not is_admin(request, database):
+        return 0
     database.add_user_tokens(username, value)
-    return int(user_tokens) + value
+    return int(database.get_user_tokens(username))
 
-def get_all_user_esses(username):
+def get_all_user_esses(request : gr.Request,username):
     database = DataBase()
+    if not is_admin(request, database):
+        return []
     esses = database.get_all_user_esses(username)
     return gr.update(choices=esses)
 
-def get_esse(username, date):
+def get_esse(request : gr.Request, username, date):
     database = DataBase()
+    if not is_admin(request, database):
+        return ['UNAUTHORIZED', 'UNAUTHORIZED', 'UNAUTHORIZED']
     if isinstance(username, list): return
     return database.get_esse(username, date)
 
-def add_user(username, password):
+def add_user(request : gr.Request, username, password):
     database = DataBase()
+    if not is_admin(request, database):
+        return
     try:
         database.add_user(username, password)
         return "Пользователь успешно добавлен"
@@ -45,8 +61,10 @@ class Admin:
     def view(self):
 
         async def init_chat(request : gr.Request):
+            database = DataBase()
             if ("username" not in request.request.session or self.db.get_user(request.request.session['username']) == None):
-                request.request.url = "/login"
+                raise gr.Error("UNAUTHORIZED! Click \"Logout\" button to go to login page")
+            if not database.is_admin(request.request.session['username']):
                 raise gr.Error("UNAUTHORIZED! Click \"Logout\" button to go to login page")
 
         with gr.Blocks() as admin:
@@ -59,7 +77,7 @@ class Admin:
 
                 slider = gr.Slider(0, 100, value=1, label="Выберите количество проверок")
                 btn_add = gr.Button("Добавить")
-                btn_add.click(fn=add_user_tokens, inputs=[user_tokens, select_user, slider], outputs=user_tokens)
+                btn_add.click(fn=add_user_tokens, inputs=[select_user, slider], outputs=user_tokens)
 
 
                 select_esse = gr.Dropdown(label="Выбор Эссе", interactive=True)
@@ -84,4 +102,5 @@ class Admin:
                         rnd_pass = gr.Button("Сгенерировать случайный пароль")
                 btn_add_user.click(fn=add_user, inputs=[user_login, user_pass], outputs=result)
                 rnd_pass.click(fn=random_password, outputs=user_pass)
+            admin.load(fn=init_chat, inputs=None, outputs=None)
         return admin

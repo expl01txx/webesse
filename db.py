@@ -38,6 +38,11 @@ class DataBase:
         else:
             return False
     
+    def add_user_tokens(self, username, tokens):
+        self.db.execute("UPDATE users SET tokens = tokens + ? WHERE login = ?", (tokens, username))
+        self.db.commit()
+
+    
     def get_users(self):
         response = self.db.execute("SELECT * from users")
         result = response.fetchall()
@@ -58,10 +63,6 @@ class DataBase:
         result = self.db.execute("SELECT tokens FROM users WHERE login = ?", (username,))
         user = result.fetchone()
         return user[0]
-    
-    def add_user_tokens(self, username, tokens):
-        self.db.execute("UPDATE users SET tokens = tokens + ? WHERE login = ?", (tokens, username))
-        self.db.commit()
     
     def get_user_checks(self, username):
         result = self.db.execute("SELECT esse_checks FROM users WHERE login = ?", (username,))
@@ -99,7 +100,3 @@ class DataBase:
         result = self.db.execute("SELECT * FROM logs WHERE login = ? AND date = ?", (username, esse_date))
         esse = result.fetchone()
         return [esse[2], esse[3], esse[4]]
-
-    def add_user(self, username, passwd):
-        self.db.execute("INSERT INTO users (login, passwd, tokens, admin, esse_checks) VALUES (?, ?, ?, ?, ?)", (username, passwd, 10, 0, 0))
-        self.db.commit()
